@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script
+      src="https://unpkg.com/htmx.org@2.0.4"
+      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
+    <title>LinguaMate</title>
+  </head>
+  <body class="h-screen w-screen bg-gray-100 text-gray-900">
+    <div class="flex h-full">
+      {{ template "sidebar.html" . }}
+      <main class="flex-1 flex flex-col">
+        {{ template "chat_window.html" . }}
+      </main>
+    </div>
+  </body>
+</html>

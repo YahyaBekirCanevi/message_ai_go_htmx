@@ -1,0 +1,18 @@
+<form
+  hx-post="/message/send"
+  hx-target="#chat-body"
+  hx-swap="beforeend"
+  
+  class="bg-white border-t p-4 flex items-center gap-2"
+>
+  <input type="hidden" name="conversation_id" value="{{ .ConversationID }}" />
+  <input
+    type="text"
+    name="message"
+    class="flex-1 p-2 border rounded"
+    placeholder="Type your message..."
+    required
+  />
+  <button class="bg-blue-500 text-white px-4 py-2 rounded">Send</button>
+</form>
+<!-- _="on submit wait 200ms then scroll to bottom of #chat-body" -->

@@ -61,12 +61,13 @@ func startServer(db *sql.DB) {
 		// Rate limiting middleware is not available in gin by default; consider using a third-party package or implement your own if needed.
 	})
 
-	r.GET("/", handlers.ListUsers(db))
-	r.POST("/users", handlers.CreateUser(db))
-	r.POST("/users/:id/update", handlers.UpdateUser(db))
-	r.DELETE("/users/:email", handlers.DeleteUser(db))
-	r.GET("/users/new", handlers.RenderNewUserModal())
-	r.GET("/users/edit/:id", handlers.RenderEditUserModal(db))
+	r.GET("/", handlers.ListConversations(db))
+
+	r.POST("/chat/new", handlers.NewChatForm())
+	r.POST("/chat/start", handlers.StartChat(db))
+	r.GET("/chat/:id", handlers.LoadChat(db))
+
+	r.POST("/message/send", handlers.SendMessage(db))
 
 	r.Run(":8080")
 	log.Println("Server is running on port 8080")
