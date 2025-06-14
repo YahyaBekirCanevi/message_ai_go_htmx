@@ -1,0 +1,31 @@
+<div
+  id="user-{{.ID}}"
+  class="user-row flex items-center justify-between bg-white p-4 rounded-xl shadow hover:shadow-md transition"
+>
+  <div class="flex items-center space-x-4">
+    <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+    <div>
+      <div class="text-lg font-semibold text-gray-900">{{ .Name }}</div>
+      <div class="text-sm text-gray-500">{{ .Email }}</div>
+    </div>
+  </div>
+  <div class="flex gap-2">
+    <button
+      hx-get="/users/edit/{{ .ID }}"
+      hx-target="body"
+      hx-swap="beforeend"
+      class="text-blue-500 hover:text-blue-700"
+    >
+      ✏️
+    </button>
+    <button
+      hx-delete="/users/{{ .Email }}"
+      hx-target="closest .user-row"
+      hx-swap="outerHTML"
+      hx-confirm="Delete this user?"
+      class="text-red-500 hover:text-red-700"
+    >
+      🗑️
+    </button>
+  </div>
+</div>

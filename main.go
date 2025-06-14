@@ -1,50 +1,73 @@
 package main
 
 import (
-	"fmt"
-	"text/template"
+	"database/sql"
+	"log"
 
+	"github.com/YahyaBekirCanevi/message_ai_go_htmx/handlers"
 	"github.com/gin-gonic/gin"
+	_ "github.com/glebarez/go-sqlite"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		users := GetUsers()
-		tmpl := template.Must(template.ParseFiles("users.html"))
-		err := tmpl.Execute(c.Writer, gin.H{"Title": "User List", "Users": users})
-		if err != nil {
-			panic(err)
-		}
-	})
-	r.POST("/users", func(c *gin.Context) {
-		tmpl := template.Must(template.ParseFiles("user_row.html"))
-
-		name := c.PostForm("name")
-		email := c.PostForm("email")
-
-		user := User{Name: name, Email: email}
-		err := tmpl.Execute(c.Writer, user)
-		if err != nil {
-			panic(err)
-		}
-	})
-	r.DELETE("/users/:name", func(c *gin.Context) {
-		name := c.Param("name")
-		fmt.Println("Delete user with name:", name)
-	})
-	r.Run(":8080")
-	fmt.Println("Server is running on port 8080")
-}
-
-type User struct {
-	Name  string
-	Email string
-}
-
-func GetUsers() []User {
-	return []User{
-		{Name: "John Doe", Email: "johndoe@example.com"},
-		{Name: "Alice Smith", Email: "alicesmith@example.com"},
+	err := initializeDatabase()
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+		return
 	}
+}
+
+func initializeDatabase() error {
+	// Define the database file name
+	dbFileName := "database.sqlite"
+
+	// Open the database connection.
+	log.Printf("Attempting to open database: %s", dbFileName)
+	db, err := sql.Open("sqlite", "file:"+dbFileName+"?cache=shared&mode=rwc")
+	if err != nil {
+		log.Fatalf("Error opening database: %v", err)
+		return err
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Error closing database: %v", err)
+		}
+		log.Println("Database connection closed.")
+	}()
+
+	// Ping the database to ensure the connection is valid
+	if err = db.Ping(); err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+		return err
+	}
+	log.Println("Successfully connected to SQLite database.")
+
+	// Run migrations to create tables
+	log.Println("Running database migrations...")
+	if err = MigrateDB(db); err != nil {
+		log.Fatalf("Database migration failed: %v", err)
+	}
+	log.Println("Database migrations completed successfully.")
+
+	log.Println("Starting server...")
+	startServer(db)
+	return nil
+}
+
+func startServer(db *sql.DB) {
+	r := gin.Default(func(e *gin.Engine) {
+		e.Use(gin.Recovery())
+		e.Use(gin.Logger())
+		// Rate limiting middleware is not available in gin by default; consider using a third-party package or implement your own if needed.
+	})
+
+	r.GET("/", handlers.ListUsers(db))
+	r.POST("/users", handlers.CreateUser(db))
+	r.POST("/users/:id/update", handlers.UpdateUser(db))
+	r.DELETE("/users/:email", handlers.DeleteUser(db))
+	r.GET("/users/new", handlers.RenderNewUserModal())
+	r.GET("/users/edit/:id", handlers.RenderEditUserModal(db))
+
+	r.Run(":8080")
+	log.Println("Server is running on port 8080")
 }

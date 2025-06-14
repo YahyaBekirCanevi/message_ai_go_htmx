@@ -1,0 +1,74 @@
+<div
+  id="user-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  hx-on="click: if(event.target.id === 'user-modal') this.remove()"
+>
+  <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+    <script>
+      const loader = document.getElementById("loader");
+      document.querySelector("form").addEventListener("htmx:request", () => {
+        loader.classList.remove("hidden");
+      });
+      document
+        .querySelector("form")
+        .addEventListener("htmx:afterRequest", () => {
+          loader.classList.add("hidden");
+        });
+    </script>
+    <script>
+      document.body.addEventListener("htmx:afterSwap", (e) => {
+        if (e.detail.target.id === "user-list") {
+          document.getElementById("user-modal")?.remove();
+        }
+      });
+    </script>
+
+    <h2 class="text-xl font-bold mb-4">
+      {{ if .IsEdit }}Edit{{ else }}Add{{ end }} User
+    </h2>
+    <form
+      hx-post="{{ if .IsEdit }}/users/{{ .User.ID }}/update{{ else }}/users{{ end }}"
+      hx-swap="beforeend"
+      hx-target="#user-list"
+      hx-on="htmx:afterOnLoad: document.getElementById('user-modal')?.remove()"
+    >
+      <input
+        type="text"
+        name="name"
+        value="{{ .User.Name }}"
+        placeholder="Name"
+        class="w-full mb-3 border border-gray-300 p-2 rounded"
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        value="{{ .User.Email }}"
+        placeholder="Email"
+        class="w-full mb-4 border border-gray-300 p-2 rounded"
+        required
+      />
+      <div class="flex justify-end gap-2 items-center">
+        <div
+          id="loader"
+          class="hidden animate-spin rounded-full h-5 w-5 border-t-2 border-blue-500"
+        ></div>
+
+        <button
+          type="button"
+          onclick="document.getElementById('user-modal').remove()"
+          class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+        >
+          {{ if .IsEdit }}Update{{ else }}Add{{ end }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
