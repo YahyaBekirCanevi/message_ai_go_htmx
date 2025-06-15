@@ -1,8 +1,14 @@
-<div class="w-64 bg-white border-r p-4 overflow-y-auto">
-  <h2 class="text-xl font-bold mb-4">Conversations</h2>
-  
+<div id="sidebar" class="w-64 p-4 overflow-y-auto m-1 bg-[#1E1C21] text-white rounded-[16px]">
+
+  <div class="flex items-center h-8 mb-4">
+    <div class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mr-2">
+      <img src="/static/icon.svg" alt="App Icon" class="w-4 h-4" />
+    </div>
+    <span class="text-lg font-semibold">App Title</span>
+    <div class="flex-1"></div>
+  </div>
   <button
-    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded mb-4"
+    class="w-full text-white py-2 rounded mb-4 bg-gradient-to-br from-blue-500 to-purple-500 rounded-8 hover:from-blue-700 hover:to-purple-700 transition"
     hx-post="/chat/new"
     hx-swap="outerHTML"
     hx-target="#chat-window"
@@ -10,10 +16,12 @@
     + New Chat
   </button>
 
+  <h2 class="text-sm font-bold my-4 text-gray-400">Conversations</h2>
+
   <div id="conversation-list">
     {{ range .Conversations }}
       <div 
-        class="mb-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+        class="mb-2 cursor-pointer py-2 px-4 rounded hover:bg-[#2D2A30]"
         hx-get="/chat/{{ .ID }}"
         hx-target="#chat-window"
         hx-swap="outerHTML"
@@ -23,3 +31,4 @@
     {{ end }}
   </div>
 </div>
+<!-- {{ if eq .ID .ConversationID }}bg-[#2D2A30]{{ end }}  -->

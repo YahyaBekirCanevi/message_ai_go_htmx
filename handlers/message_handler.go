@@ -51,7 +51,6 @@ func SendMessage(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
-
 func ListConversations(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conversations, err := models.GetAllChats(db)
@@ -61,39 +60,13 @@ func ListConversations(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		var selectedConversation *models.Conversation
 		var messages []models.Message
-
-		// Auto-select the most recent conversation, if any exist
-		if len(conversations) > 0 {
-			selectedConversation = &conversations[0]
-
-			messages, err = models.GetMessagesByConversation(db, selectedConversation.ID)
-			if err != nil {
-				log.Printf("Failed to get messages for conversation %d: %v", selectedConversation.ID, err)
-				c.String(http.StatusInternalServerError, "Error retrieving messages")
-				return
-			}
-		}
 
 		tmpl := template.Must(template.ParseGlob("templates/*.html"))
 
-		var selectedID interface{}
-		var selectedTitle interface{}
-		
-		if selectedConversation != nil {
-			selectedID = selectedConversation.ID
-			selectedTitle = selectedConversation.Title
-		} else {
-			selectedID = nil
-			selectedTitle = nil
-		}
-
 		err = tmpl.ExecuteTemplate(c.Writer, "layout.html", gin.H{
-			"Conversations": conversations,
-			"Messages":      messages,
-			"SelectedID":    selectedID,
-			"SelectedTitle": selectedTitle,
+			"Conversations":  conversations,
+			"Messages":       messages,
 		})
 		if err != nil {
 			log.Printf("Template execution error: %v", err)

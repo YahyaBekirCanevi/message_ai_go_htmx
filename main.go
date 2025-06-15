@@ -60,6 +60,8 @@ func startServer(db *sql.DB) {
 		e.Use(gin.Logger())
 		// Rate limiting middleware is not available in gin by default; consider using a third-party package or implement your own if needed.
 	})
+	// Serve static files from the "static" directory
+	r.Static("/static", "./static")
 
 	r.GET("/", handlers.ListConversations(db))
 
