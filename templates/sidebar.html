@@ -1,7 +1,11 @@
-<div id="sidebar" class="w-64 p-4 overflow-y-auto m-1 bg-[#1E1C21] text-white rounded-[16px]">
-
+<div
+  id="sidebar"
+  class="w-64 overflow-y-hidden p-4 m-1 bg-[#1E1C21] text-white rounded-[16px] hidden md:block"
+>
   <div class="flex items-center h-8 mb-4">
-    <div class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mr-2">
+    <div
+      class="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full mr-2"
+    >
       <img src="/static/icon.svg" alt="App Icon" class="w-4 h-4" />
     </div>
     <span class="text-lg font-semibold">App Title</span>
@@ -16,19 +20,5 @@
     + New Chat
   </button>
 
-  <h2 class="text-sm font-bold my-4 text-gray-400">Conversations</h2>
-
-  <div id="conversation-list">
-    {{ range .Conversations }}
-      <div 
-        class="mb-2 cursor-pointer py-2 px-4 rounded hover:bg-[#2D2A30]"
-        hx-get="/chat/{{ .ID }}"
-        hx-target="#chat-window"
-        hx-swap="outerHTML"
-      >
-        {{ .Title }}
-      </div>
-    {{ end }}
-  </div>
+  {{ template "conversations.html" . }}
 </div>
-<!-- {{ if eq .ID .ConversationID }}bg-[#2D2A30]{{ end }}  -->

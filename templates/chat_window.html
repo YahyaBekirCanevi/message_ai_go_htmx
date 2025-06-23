@@ -1,10 +1,12 @@
 <div
   id="chat-window"
-  class="flex-1 flex flex-col h-full bg-[#1E1C21] text-white rounded-[16px] m-1 overflow-hidden"
+  class="flex flex-col h-full text-white rounded-[16px] m-1 overflow-hidden"
 >
-  <div class="flex items-center p-2">
+  <!-- Header with sidebar toggle -->
+  <div class="flex items-center p-2 flex-none">
     <button
-      class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition"
+      id="toggle-sidebar-btn"
+      class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-700 transition"
       title="Toggle Sidebar"
       aria-label="Toggle Sidebar"
       onclick="
@@ -31,39 +33,48 @@
     </button>
     <div class="flex-1"></div>
   </div>
-  <!-- Topic selection at the top (if new chat) -->
-  {{ if .IsNew }}
-  <div class="flex justify-center items-center py-8 h-full">
-    <div class="bg-[#2D2A30] rounded-lg shadow-lg p-6 w-full max-w-md">
-      <form
-        class="flex flex-col gap-4"
-        hx-post="/chat/start"
-        hx-target="#chat-window"
-        hx-swap="innerHTML"
-      >
-        <input
-          type="text"
-          name="topic"
-          placeholder="Enter a topic..."
-          class="flex-1 p-2 bg-[#2D2A30] border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          required
-        />
-        <button
-          class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+
+  <!-- Main chat area grows to fill space -->
+  <div class="flex-1 flex flex-col min-h-0 w-full">
+    <!-- Topic selection at the top (if new chat) -->
+    {{ if .IsNew }}
+    <div class="flex justify-center items-center py-8 h-full">
+      <div class="bg-[#2D2A30] rounded-lg shadow-lg p-6 w-full max-w-md">
+        <form
+          id="new-chat-form"
+          class="flex flex-col gap-4"
+          hx-post="/chat/start"
+          hx-target="body"
+          hx-swap="outerHTML"
         >
-          Start
-        </button>
-      </form>
+          <input
+            type="text"
+            name="topic"
+            placeholder="Enter a topic..."
+            class="flex-1 p-2 bg-[#2D2A30] border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            required
+          />
+          <button
+            class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          >
+            Start
+          </button>
+        </form>
+      </div>
     </div>
+    {{ end }} {{ if not .IsNew }}
+    <!-- Chat messages and input bar in a flex column layout -->
+    <div class="flex flex-col flex-1 min-h-0">
+      <div class="flex-1 min-h-0 overflow-y-auto p-4 custom-scrollbar">
+        <div id="chat-body" class="mx-auto w-full max-w-[650px] space-y-4">
+          {{ range .Messages }} {{ template "message_bubble.html" . }} {{ end }}
+        </div>
+      </div>
+      <!-- Input bar -->
+      <div class="w-full max-w-[650px] mx-auto">
+        {{ template "chat_input.html" . }}
+      </div>
+    </div>
+    {{ end }}
   </div>
-  {{ end }} {{ if not .IsNew }}
-  <!-- Chat messages -->
-  <div
-    id="chat-body"
-    class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar"
-  >
-    {{ range .Messages }} {{ template "message_bubble.html" . }} {{ end }}
-  </div>
-  <!-- Input bar -->
-  {{ template "chat_input.html" . }} {{ end }}
 </div>

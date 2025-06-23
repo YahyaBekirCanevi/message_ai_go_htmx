@@ -1,0 +1,17 @@
+<h2 class="text-sm font-bold my-4 text-gray-400">Conversations</h2>
+
+<div
+  id="conversation-list"
+  class="overflow-y-scroll custom-scrollbar h-[calc(100vh-200px)]"
+>
+  {{ range .Conversations }}
+  <div
+    class="mb-2 cursor-pointer py-2 px-4 rounded {{ if eq .ID $.ConversationID }}bg-[#3C3B40]{{ else }}hover:bg-[#2D2A30]{{ end }}"
+    hx-get="/chat/{{ .ID }}"
+    hx-target="body"
+    hx-swap="outerHTML"
+  >
+    {{ .Title }}
+  </div>
+  {{ end }}
+</div>

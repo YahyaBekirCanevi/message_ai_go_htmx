@@ -45,17 +45,24 @@ func StartChat(db *sql.DB) gin.HandlerFunc {
 			c.String(http.StatusInternalServerError, "Error creating chat")
 			return
 		}
+		conversations, err := models.GetAllChats(db)
+		if err != nil {
+			log.Printf("Failed to retrieve conversations: %v", err)
+			c.String(http.StatusInternalServerError, "Error retrieving conversations")
+			return
+		}
 
-		tmpl := template.Must(template.ParseFiles(
-			"templates/chat_window.html",
-			"templates/chat_input.html",
-			"templates/message_bubble.html",
-		))
-		tmpl.Execute(c.Writer, gin.H{
-			"IsNew":          false,
+		tmpl := template.Must(template.ParseGlob("templates/*.html"))
+
+		err = tmpl.ExecuteTemplate(c.Writer, "body.html", gin.H{
 			"ConversationID": conv.ID,
+			"Conversations":  conversations,
 			"Messages":       []models.Message{},
 		})
+
+		if err != nil {
+			log.Printf("Template execution error: %v", err)
+		}
 	}
 }
 
@@ -74,22 +81,30 @@ func LoadChat(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
+		conversations, err := models.GetAllChats(db)
+		if err != nil {
+			log.Printf("Failed to retrieve conversations: %v", err)
+			c.String(http.StatusInternalServerError, "Error retrieving conversations")
+			return
+		}
+
 		msgs, err := models.GetMessagesByConversation(db, id)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error retrieving messages")
 			return
 		}
 
-		tmpl := template.Must(template.ParseFiles(
-			"templates/chat_window.html",
-			"templates/chat_input.html",
-			"templates/message_bubble.html",
-		))
-		tmpl.Execute(c.Writer, gin.H{
-			"IsNew":          false,
+		tmpl := template.Must(template.ParseGlob("templates/*.html"))
+
+		err = tmpl.ExecuteTemplate(c.Writer, "body.html", gin.H{
 			"ConversationID": id,
+			"Conversations":  conversations,
 			"Messages":       msgs,
 			"Title":          conv.Title,
 		})
+
+		if err != nil {
+			log.Printf("Template execution error: %v", err)
+		}
 	}
 }

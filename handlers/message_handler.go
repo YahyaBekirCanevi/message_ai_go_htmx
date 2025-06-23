@@ -56,17 +56,16 @@ func ListConversations(db *sql.DB) gin.HandlerFunc {
 		conversations, err := models.GetAllChats(db)
 		if err != nil {
 			log.Printf("Failed to retrieve conversations: %v", err)
-			c.String(http.StatusInternalServerError, "Error retrieving conversations")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving conversations"})
 			return
 		}
-
 		var messages []models.Message
 
 		tmpl := template.Must(template.ParseGlob("templates/*.html"))
 
 		err = tmpl.ExecuteTemplate(c.Writer, "layout.html", gin.H{
-			"Conversations":  conversations,
-			"Messages":       messages,
+			"Conversations": conversations,
+			"Messages":      messages,
 		})
 		if err != nil {
 			log.Printf("Template execution error: %v", err)

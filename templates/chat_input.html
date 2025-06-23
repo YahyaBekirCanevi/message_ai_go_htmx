@@ -2,8 +2,18 @@
   hx-post="/message/send"
   hx-target="#chat-body"
   hx-swap="beforeend"
-  _="on htmx:afterRequest wait 100ms then call scrollTo(0, document.querySelector('#chat-body').scrollHeight) on #chat-body"
-  class="bg-[#1E1C21] text-white border-t border-[#3C3B40] p-4 flex items-center gap-2"
+  id="chat-input"
+  class="bg-[#1E1C21] text-white rounded-[16px] min-h-[72px] border border-[#3C3B40] p-4 flex items-center gap-2"
+  _="on htmx:afterRequest or load
+        set chatBody to #chat-body
+        set chatBodyParent to chatBody.parentElement
+        if chatBody
+            wait 50ms -- Give the browser a moment to render the new content
+            then set newScrollPosition to chatBodyParent.scrollHeight
+            -- then log 'Scrolling #chat-body to:', newScrollPosition, 'Current scrollTop:', chatBody.scrollTop
+            then call chatBodyParent.scrollTo(0, newScrollPosition)
+        else
+            call console.error('Could not find #chat-body element for scrolling.')"
 >
   <input type="hidden" name="conversation_id" value="{{ .ConversationID }}" />
   <input
@@ -13,5 +23,9 @@
     placeholder="Type your message..."
     required
   />
-  <button class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded">Send</button>
+  <button
+    class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded"
+  >
+    Send
+  </button>
 </form>
