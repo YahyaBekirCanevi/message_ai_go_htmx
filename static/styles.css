@@ -31,3 +31,37 @@
   background: #0000;
   border-radius: 8px;
 }
+
+/* Code block horizontal scroll and custom scrollbar */
+.prose pre {
+  overflow-x: auto;
+  padding: 1em;
+  border-radius: 0.5em;
+  background: #18181b;
+  color: #e0e0e0;
+  font-size: 0.95em;
+  margin-bottom: 1em;
+}
+.prose code {
+  background: #232136;
+  color: #c9cbff;
+  border-radius: 0.3em;
+  padding: 0.15em 0.4em;
+  font-size: 0.97em;
+}
+.prose pre::-webkit-scrollbar {
+  height: 8px;
+  background: #0000;
+}
+.prose pre::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #37306b 40%, #818cf8 100%);
+  border-radius: 8px;
+}
+.prose pre::-webkit-scrollbar-track {
+  background: #0000;
+  border-radius: 8px;
+}
+.prose pre {
+  scrollbar-width: thin;
+  scrollbar-color: #37306b #0000;
+}

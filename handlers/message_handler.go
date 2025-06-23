@@ -10,6 +10,8 @@ import (
 
 	"github.com/YahyaBekirCanevi/message_ai_go_htmx/models"
 	"github.com/gin-gonic/gin"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 )
 
 func SendMessage(db *sql.DB) gin.HandlerFunc {
@@ -36,7 +38,11 @@ func SendMessage(db *sql.DB) gin.HandlerFunc {
 		}
 
 		// Create dummy AI reply (can be replaced with real model later)
-		aiReply := "This is a placeholder AI response."
+		aiReply, err := GetGeminiAIResponse(content)
+		if err != nil {
+			log.Printf("Gemini API error: %v", err)
+			aiReply = "[AI Error: could not get response]"
+		}
 		aiMsg, err := models.CreateMessage(db, conversationID, "ai", aiReply)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Failed to save AI message")
@@ -51,6 +57,11 @@ func SendMessage(db *sql.DB) gin.HandlerFunc {
 	}
 }
 
+func markdownHTML(input string) template.HTML {
+	output := markdown.ToHTML([]byte(input), nil, html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags | html.HrefTargetBlank}))
+	return template.HTML(output)
+}
+
 func ListConversations(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		conversations, err := models.GetAllChats(db)
@@ -59,13 +70,28 @@ func ListConversations(db *sql.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error retrieving conversations"})
 			return
 		}
-		var messages []models.Message
 
-		tmpl := template.Must(template.ParseGlob("templates/*.html"))
+		funcMap := template.FuncMap{"markdown": markdownHTML}
+		tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
+
+		var cId *int
+		if len(conversations) > 0 {
+			cId = &conversations[0].ID
+		} else {
+			cId = nil
+		}
+
+		messages, err := models.GetMessagesByConversation(db, *cId)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error retrieving messages")
+			return
+		}
 
 		err = tmpl.ExecuteTemplate(c.Writer, "layout.html", gin.H{
-			"Conversations": conversations,
-			"Messages":      messages,
+			"IsNew":          cId == nil,
+			"ConversationID": *cId,
+			"Conversations":  conversations,
+			"Messages":       messages,
 		})
 		if err != nil {
 			log.Printf("Template execution error: %v", err)

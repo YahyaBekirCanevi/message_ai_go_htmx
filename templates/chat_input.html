@@ -11,21 +11,27 @@
             wait 50ms -- Give the browser a moment to render the new content
             then set newScrollPosition to chatBodyParent.scrollHeight
             -- then log 'Scrolling #chat-body to:', newScrollPosition, 'Current scrollTop:', chatBody.scrollTop
+            then set #chat-input input[name='message'].value to ''
             then call chatBodyParent.scrollTo(0, newScrollPosition)
         else
             call console.error('Could not find #chat-body element for scrolling.')"
 >
   <input type="hidden" name="conversation_id" value="{{ .ConversationID }}" />
-  <input
-    type="text"
+  <textarea
     name="message"
-    class="flex-1 p-2 border-none rounded bg-[#2D2A30] focus:outline-none focus:ring-2 focus:ring-blue-400"
+    class="flex-1 p-2 border-none rounded bg-[#2D2A30] focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
     placeholder="Type your message..."
     required
-  />
+    rows="1"
+    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"
+    style="min-height: 40px; max-height: 120px; overflow-y: auto;"
+  ></textarea>
   <button
     class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded"
-  >
+    hx-disable="true"
+    _="on htmx:beforeRequest add @disabled
+       on htmx:afterRequest or htmx:responseError remove @disabled"
+    >
     Send
   </button>
 </form>

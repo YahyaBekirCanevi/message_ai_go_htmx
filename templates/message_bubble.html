@@ -6,8 +6,8 @@
   </div>
 {{ else }}
   <div class="flex justify-start">
-    <div class="bg-transparent text-white px-4 py-2 rounded-lg max-w-lg">
-      {{ .Content }}
+    <div class="bg-transparent text-white px-4 py-2 rounded-lg max-w-full prose prose-invert">
+      {{ .Content | markdown }}
     </div>
   </div>
 {{ end }}

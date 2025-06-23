@@ -1,0 +1,51 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output of build tools
+/build/
+/bin/
+
+# Vendor directory (if using vendoring)
+vendor/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# SQLite database
+*.sqlite
+
+# Config files with secrets
+application.yml
+
+# Go modules cache
+/go.sum
+
+# Coverage files
+*.out
+
+# Node/npm (if any frontend)
+node_modules/
+
+# Python (if any scripts)
+__pycache__/
+*.pyc
+
+# Jupyter Notebooks
+*.ipynb
