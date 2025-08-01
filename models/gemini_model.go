@@ -27,6 +27,34 @@ func NewGeminiRequest(prompt string) GeminiRequest {
 	}
 }
 
+func NewGeminiRequestParts(messages []Message, userPrompt string) GeminiRequest {
+	// Limit the number of previous messages sent for context
+	const maxContextMessages = 10
+	startIdx := 0
+	if len(messages) > maxContextMessages {
+		startIdx = len(messages) - maxContextMessages
+	}
+	trimmedMessages := messages[startIdx:]
+
+	// Build context from previous messages
+	var parts []GeminiPart
+	
+	for _, msg := range trimmedMessages {
+		role := "User: "
+		if msg.Sender == "ai" {
+			role = "AI: "
+		}
+		parts = append(parts, GeminiPart{Text: role + msg.Content})
+	}
+	parts = append(parts, GeminiPart{Text: "User: " + userPrompt})
+	return GeminiRequest{
+		Contents: []GeminiContent{
+			{
+				Parts: parts,
+			},
+		},
+	}
+}
 // GeminiResponse is a struct for the Gemini API response body
 
 type GeminiResponse struct {

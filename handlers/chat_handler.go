@@ -16,12 +16,15 @@ import (
 func NewChatForm() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Println("NewChatForm handler called")
-		tmpl := template.Must(template.ParseFiles(
+
+		funcMap := template.FuncMap{"markdown": markdownHTML}
+		tmpl := template.Must(template.New("").Funcs(funcMap).ParseFiles(
 			"templates/chat_window.html",
 			"templates/chat_input.html",
 			"templates/message_bubble.html",
 		))
-		err := tmpl.Execute(c.Writer, gin.H{"IsNew": true, "Messages": []models.Message{}})
+
+		err := tmpl.ExecuteTemplate(c.Writer, "chat_window.html", gin.H{"IsNew": true})
 		if err != nil {
 			log.Printf("Template execution error: %v", err)
 		}
@@ -52,7 +55,8 @@ func StartChat(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		tmpl := template.Must(template.ParseGlob("templates/*.html"))
+		funcMap := template.FuncMap{"markdown": markdownHTML}
+		tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 		err = tmpl.ExecuteTemplate(c.Writer, "body.html", gin.H{
 			"ConversationID": conv.ID,
@@ -94,7 +98,8 @@ func LoadChat(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
-		tmpl := template.Must(template.ParseGlob("templates/*.html"))
+		funcMap := template.FuncMap{"markdown": markdownHTML}
+		tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 		err = tmpl.ExecuteTemplate(c.Writer, "body.html", gin.H{
 			"ConversationID": id,

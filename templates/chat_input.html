@@ -1,37 +1,57 @@
 <form
   hx-post="/message/send"
   hx-target="#chat-body"
-  hx-swap="beforeend"
+  hx-swap="innerHTML"
   id="chat-input"
   class="bg-[#1E1C21] text-white rounded-[16px] min-h-[72px] border border-[#3C3B40] p-4 flex items-center gap-2"
   _="on htmx:afterRequest or load
-        set chatBody to #chat-body
-        set chatBodyParent to chatBody.parentElement
-        if chatBody
-            wait 50ms -- Give the browser a moment to render the new content
-            then set newScrollPosition to chatBodyParent.scrollHeight
-            -- then log 'Scrolling #chat-body to:', newScrollPosition, 'Current scrollTop:', chatBody.scrollTop
-            then set #chat-input input[name='message'].value to ''
-            then call chatBodyParent.scrollTo(0, newScrollPosition)
-        else
-            call console.error('Could not find #chat-body element for scrolling.')"
+      set chatBody to #chat-body
+      set chatBodyParent to chatBody.parentElement
+      if chatBody
+          wait 50ms
+          set newScrollPosition to chatBodyParent.scrollHeight
+          set chatInputTextarea to #chat-input.querySelector(`textarea[name='message']`)
+          set chatInputTextarea.value to ''
+          call chatBodyParent.scrollTo(0, newScrollPosition)
+      else
+          call console.error('Could not find #chat-body element for scrolling.')"
 >
   <input type="hidden" name="conversation_id" value="{{ .ConversationID }}" />
   <textarea
     name="message"
-    class="flex-1 p-2 border-none rounded bg-[#2D2A30] focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+    class="flex-1 p-2 border-none rounded bg-[#2D2A30] focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none custom-scrollbar"
     placeholder="Type your message..."
     required
+    maxlength="2000"
     rows="1"
+    oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,192)+'px'; this.style.overflowY = (this.scrollHeight > 192) ? 'auto' : 'hidden';"
     onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"
-    style="min-height: 40px; max-height: 120px; overflow-y: auto;"
+    style="min-height: 32px; max-height: 192px; overflow-y: hidden"
   ></textarea>
   <button
-    class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded"
-    hx-disable="true"
-    _="on htmx:beforeRequest add @disabled
-       on htmx:afterRequest or htmx:responseError remove @disabled"
-    >
+    type="submit"
+    hx-indicator="#spinner"
+    disabled
+    class="bg-gradient-to-br from-blue-500 to-purple-500 text-white px-4 py-2 rounded transition-colors duration-200 disabled:bg-gray-500 disabled:from-gray-500 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center min-w-[64px]"
+    _="
+    on htmx:beforeRequest
+      set myForm to my closest 'form'
+      if event.target is myForm
+        add @disabled
+
+    on htmx:afterRequest or htmx:responseError
+      set myForm to my closest 'form'
+      if event.target is myForm
+        remove @disabled
+  "
+  >
     Send
+    <img
+      id="spinner"
+      class="htmx-indicator"
+      src="/static/spinner.svg"
+      width="16px"
+      height="16px"
+    />
   </button>
 </form>

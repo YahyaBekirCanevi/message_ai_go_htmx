@@ -1,12 +1,12 @@
 {{ if eq .Sender "user" }}
   <div class="flex justify-end">
-    <div class="bg-[#1E1C21] text-white px-4 py-2 rounded-lg max-w-lg">
+    <div class="bg-[#1E1C21] text-white px-4 py-2 rounded-lg max-w-lg break-words overflow-x-auto">
       {{ .Content }}
     </div>
   </div>
 {{ else }}
   <div class="flex justify-start">
-    <div class="bg-transparent text-white px-4 py-2 rounded-lg max-w-full prose prose-invert">
+    <div class="bg-transparent text-white px-4 py-2 rounded-lg max-w-full prose prose-invert break-words overflow-x-auto">
       {{ .Content | markdown }}
     </div>
   </div>

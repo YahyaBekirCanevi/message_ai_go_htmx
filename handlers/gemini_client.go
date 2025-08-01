@@ -11,7 +11,7 @@ import (
 	"github.com/YahyaBekirCanevi/message_ai_go_htmx/models"
 )
 
-func GetGeminiAIResponse(prompt string) (string, error) {
+func GetGeminiAIResponse(messages []models.Message, userPrompt string) (string, error) {
 	apiKey, apiURL := config.LoadConfig()
 	if apiKey == "" {
 		return "", fmt.Errorf("gemini_api_key not set in application.yml")
@@ -21,7 +21,7 @@ func GetGeminiAIResponse(prompt string) (string, error) {
 	}
 	url := fmt.Sprintf("%s?key=%s", apiURL, apiKey)
 
-	requestBody := models.NewGeminiRequest(prompt)
+	requestBody := models.NewGeminiRequestParts(messages, userPrompt)
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
 		return "", err

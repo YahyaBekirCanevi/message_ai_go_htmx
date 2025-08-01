@@ -13,26 +13,16 @@ type Message struct {
 	CreatedAt      time.Time `db:"created_at" json:"created_at"`
 }
 
-func CreateMessage(db *sql.DB, conversationID int, sender string, content string) (*Message, error) {
+func CreateMessage(db *sql.DB, conversationID int, sender string, content string) (error) {
 	now := time.Now()
-	result, err := db.Exec(
+	_, err := db.Exec(
 		`INSERT INTO messages (conversation_id, sender, content, created_at) VALUES (?, ?, ?, ?)`,
 		conversationID, sender, content, now,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	return &Message{
-		ID:             int(id),
-		ConversationID: conversationID,
-		Sender:         sender,
-		Content:        content,
-		CreatedAt:      now,
-	}, nil
+	return  nil
 }
 
 func GetMessagesByConversation(db *sql.DB, conversationID int) ([]Message, error) {

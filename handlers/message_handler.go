@@ -30,30 +30,49 @@ func SendMessage(db *sql.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Fetch previous messages for context
+		prevMessages, err := models.GetMessagesByConversation(db, conversationID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to fetch previous messages")
+			return
+		}
+
 		// Create user message
-		userMsg, err := models.CreateMessage(db, conversationID, "user", content)
+		err = models.CreateMessage(db, conversationID, "user", content)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Failed to save user message")
 			return
 		}
 
-		// Create dummy AI reply (can be replaced with real model later)
-		aiReply, err := GetGeminiAIResponse(content)
+		// Get AI reply and updated context prompt
+		aiReply, err := GetGeminiAIResponse(prevMessages, content)
 		if err != nil {
 			log.Printf("Gemini API error: %v", err)
 			aiReply = "[AI Error: could not get response]"
 		}
-		aiMsg, err := models.CreateMessage(db, conversationID, "ai", aiReply)
+		err = models.CreateMessage(db, conversationID, "ai", aiReply)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Failed to save AI message")
 			return
 		}
 
-		tmpl := template.Must(template.ParseFiles("templates/message_bubble.html"))
+		// Fetch all messages for the conversation
+		allMessages, err := models.GetMessagesByConversation(db, conversationID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to fetch messages")
+			return
+		}
+
+		funcMap := template.FuncMap{"markdown": markdownHTML}
+		tmpl := template.Must(template.New("").Funcs(funcMap).ParseFiles(
+			"templates/chat_body.html",
+			"templates/message_bubble.html",
+		))
 
 		c.Header("Content-Type", "text/html")
-		tmpl.Execute(c.Writer, userMsg)
-		tmpl.Execute(c.Writer, aiMsg)
+		tmpl.ExecuteTemplate(c.Writer, "chat_body.html", gin.H{
+			"Messages": allMessages,
+		})
 	}
 }
 
@@ -81,15 +100,27 @@ func ListConversations(db *sql.DB) gin.HandlerFunc {
 			cId = nil
 		}
 
-		messages, err := models.GetMessagesByConversation(db, *cId)
-		if err != nil {
-			c.String(http.StatusInternalServerError, "Error retrieving messages")
-			return
+		var messages []models.Message
+		if cId != nil {
+			messages, err = models.GetMessagesByConversation(db, *cId)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "Error retrieving messages")
+				return
+			}
+		} else {
+			messages = []models.Message{}
+		}
+
+		var conversationID interface{}
+		if cId != nil {
+			conversationID = *cId
+		} else {
+			conversationID = nil
 		}
 
 		err = tmpl.ExecuteTemplate(c.Writer, "layout.html", gin.H{
 			"IsNew":          cId == nil,
-			"ConversationID": *cId,
+			"ConversationID": conversationID,
 			"Conversations":  conversations,
 			"Messages":       messages,
 		})
